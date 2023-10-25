@@ -1,0 +1,11 @@
+version: '3.7'
+
+services:
+  cnc-motor-control:
+    build: .
+    volumes:
+      - .:/usr/src/cnc-motor-control
+    command: bash -c "python $$default_file"
+networks:
+  cnc-motor-control_default:
+    driver: bridge
