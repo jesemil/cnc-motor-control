@@ -2,6 +2,7 @@ version: '3.7'
 
 services:
   cnc-motor-control:
+    privileged: true
     build: .
     volumes:
       - .:/usr/src/cnc-motor-control
