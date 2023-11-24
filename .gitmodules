@@ -1,1 +1,4 @@
 
+[submodule "PyCNC"]
+	path = PyCNC
+	url = git@github.com:jesemil/PyCNC.git
