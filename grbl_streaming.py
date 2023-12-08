@@ -98,25 +98,36 @@ if args.check : check_mode = True
 
 # Wake up grbl
 print("Initializing Grbl...")
-unicode_string_init = '\r\n\r\n'
-byte_string_init = unicode_string_init.encode('utf-8')
-s.write(byte_string_init)
+sys.stdout.flush()
+#unicode_string_init = '\r\n\r\n'
+#byte_string_init = unicode_string_init.encode('utf-8')
+#s.write(byte_string_init)
+
 
 # Wait for grbl to initialize and flush startup text in serial input
 time.sleep(2)
 s.flushInput()
 
+s.write(("$X" + "\n").encode('utf-8'))
+time.sleep(2)   # Wait for grbl to initialize 
+s.flushInput()  # Flush startup text in serial input
+
+
 if check_mode :
     print ("Enabling Grbl Check-Mode: SND: [$C]",)
+    sys.stdout.flush()
     s.write(("$C\n").encode('utf-8'))
     while 1:
         grbl_out = s.readline().decode('utf-8').strip() # Wait for grbl response with carriage return
         if grbl_out.find('error') >= 0 :
             print ("REC:",grbl_out)
+            sys.stdout.flush()
             print ("  Failed to set Grbl check-mode. Aborting...")
+            sys.stdout.flush()
             quit()
         elif grbl_out.find('ok') >= 0 :
             if verbose: print ('REC:',grbl_out)
+            sys.stdout.flush()
             break
 
 start_time = time.time()
@@ -139,6 +150,7 @@ if settings_mode:
         # l_block = re.sub('\s|\(.*?\)','',line).upper() # Strip comments/spaces/new line and capitalize
         l_block = line.strip() # Strip all EOL characters for consistency
         if verbose: print("SND>"+str(l_count)+": \"" + l_block + "\"")
+        sys.stdout.flush()
         unicode_string_stream = l_block + '\n'
         byte_string_stream = unicode_string_stream.encode('utf-8')
         s.write(byte_string_stream) # Send g-code block to grbl
@@ -146,13 +158,16 @@ if settings_mode:
             grbl_out = s.readline().decode('utf-8').strip() # Wait for grbl response with carriage return
             if grbl_out.find('ok') >= 0 :
                 if verbose: print ("  REC<"+str(l_count)+": \""+grbl_out+"\"")
+                sys.stdout.flush()
                 break
             elif grbl_out.find('error') >= 0 :
                 if verbose: print ("  REC<"+str(l_count)+": \""+grbl_out+"\"")
+                sys.stdout.flush()
                 error_count += 1
                 break
             else:
                 print ("    MSG: \""+grbl_out+"\"")
+                sys.stdout.flush()
 else:    
     # Send g-code program via a more agressive streaming protocol that forces characters into
     # Grbl's serial read buffer to ensure Grbl has immediate access to the next g-code command
@@ -171,28 +186,35 @@ else:
             out_temp = s.readline().decode('utf-8').strip() # Wait for grbl response
             if out_temp.find('ok') < 0 and out_temp.find('error') < 0 :
                 print ("    MSG: \""+out_temp+"\"") # Debug response
+                sys.stdout.flush()
             else :
                 if out_temp.find('error') >= 0 : error_count += 1
                 g_count += 1 # Iterate g-code counter
                 if verbose: print ("  REC<"+str(g_count)+": \""+out_temp+"\"")
+                sys.stdout.flush()
                 del c_line[0] # Delete the block character count corresponding to the last 'ok'
         unicode_string_stream = l_block + '\n'
         byte_string_stream = unicode_string_stream.encode('utf-8')
         s.write(byte_string_stream) # Send g-code block to grbl
         if verbose: print ("SND>"+str(l_count)+": \"" + l_block + "\"")
+        sys.stdout.flush()
     # Wait until all responses have been received.
     while l_count > g_count :
         out_temp = s.readline().decode('utf-8').strip() # Wait for grbl response
+        print("estoy en while")
         if out_temp.find('ok') < 0 and out_temp.find('error') < 0 :
             print ("    MSG: \""+out_temp+"\"") # Debug response
+            sys.stdout.flush()
         else :
             if out_temp.find('error') >= 0 : error_count += 1
             g_count += 1 # Iterate g-code counter
             del c_line[0] # Delete the block character count corresponding to the last 'ok'
             if verbose: print ("  REC<"+str(g_count)+": \""+out_temp + "\"")
+            sys.stdout.flush()
 
 # Wait for user input after streaming is completed
 print ("\nG-code streaming finished!")
+sys.stdout.flush()
 end_time = time.time()
 is_run = False
 print (" Time elapsed: ",end_time-start_time,"\n")
@@ -203,7 +225,7 @@ if check_mode :
         print ("CHECK PASSED: No errors found in g-code program.\n")
 else :
    print ("WARNING: Wait until Grbl completes buffered g-code blocks before exiting.")
-   input("  Press <Enter> to exit and disable Grbl.") 
+   #input("  Press <Enter> to exit and disable Grbl.") 
 
 # Close file and serial port
 f.close()
