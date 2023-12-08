@@ -3,10 +3,12 @@ version: '3.7'
 services:
   cnc-motor-control:
     privileged: true
-    build: .
+    build: 
+      context: .
+      dockerfile: Dockerfile
     volumes:
-      - .:/usr/src/cnc-motor-control
-    command: bash -c "python $$default_file"
+      - .:/app
+    command: ["tail", "-f", "/dev/null"]
 networks:
   cnc-motor-control_default:
     driver: bridge
