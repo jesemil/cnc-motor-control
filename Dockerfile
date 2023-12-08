@@ -1,10 +1,10 @@
 FROM python:3.6-slim
 
-WORKDIR /usr/src/cnc-motor-control
+WORKDIR /app
 
 COPY requirements.txt ./
+# Copia los archivos locales al contenedor en /app
+COPY . /app
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
-
-CMD [ "python", "./main.py" ]
+CMD [ "python", "main.py" ]
