@@ -1,0 +1,15 @@
+version: '3.7'
+
+services:
+  cnc-motor-control:
+    privileged: true
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+      - /dev:/dev
+    command: ["tail", "-f", "/dev/null"]
+networks:
+  cnc-motor-control_default:
+    driver: bridge
