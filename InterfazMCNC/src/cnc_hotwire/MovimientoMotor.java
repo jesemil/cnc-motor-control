@@ -115,8 +115,10 @@ public class MovimientoMotor {
     
     public static ProcessBuilder grblStreaming(){
         
-        String dockerComposeFile = System.getProperty("user.dir").replace("/InterfazMCNC","");
-
+        String dockerComposeFile = System.getProperty("user.dir").replace("/InterfazMCNC","/python_scripts");
+        if (dockerComposeFile.contains("dist")){
+            dockerComposeFile = dockerComposeFile.replace("/dist","");
+        }
         // Construye el comando para ejecutar docker-compose
         ProcessBuilder python_streaming_process = new ProcessBuilder("docker-compose","exec","-T", "cnc-motor-control",
                  "python","grbl_streaming.py",gcode_route ,serial_route);
@@ -125,8 +127,11 @@ public class MovimientoMotor {
     }
     
     public static void moveMotors (String dir){
-        String dockerComposeFile = System.getProperty("user.dir").replace("/InterfazMCNC","");
-
+        String dockerComposeFile = System.getProperty("user.dir").replace("/InterfazMCNC","/python_scripts");
+        
+        if (dockerComposeFile.contains("dist")){
+            dockerComposeFile = dockerComposeFile.replace("/dist","");
+        }
         // Construye el comando para ejecutar docker-compose
         ProcessBuilder moveMotors_process = new ProcessBuilder(
                 "docker-compose","exec","-T", "cnc-motor-control","python", "/app/commands_stream.py",serial_route,"-m", "-mm", dir);
@@ -149,8 +154,11 @@ public class MovimientoMotor {
     
     public static Boolean setSettingsGrbl (){
         boolean error= false;
-        String dockerComposeFile = System.getProperty("user.dir").replace("/InterfazMCNC","");
-
+        String dockerComposeFile = System.getProperty("user.dir").replace("/InterfazMCNC","/python_scripts");
+        
+        if (dockerComposeFile.contains("dist")){
+            dockerComposeFile = dockerComposeFile.replace("/dist","");
+        }
         // Construye el comando para ejecutar docker-compose
          ProcessBuilder setSettingsGrbl_process = new ProcessBuilder(
                 "docker-compose","exec","-T", "cnc-motor-control","python","/app/commands_stream.py", serial_route, "-u","--speed",
@@ -193,8 +201,10 @@ public class MovimientoMotor {
     
     public static ProcessBuilder grblHoming (){
         
-        String dockerComposeFile = System.getProperty("user.dir").replace("/InterfazMCNC","");
-
+        String dockerComposeFile = System.getProperty("user.dir").replace("/InterfazMCNC","/python_scripts");
+        if (dockerComposeFile.contains("dist")){
+            dockerComposeFile = dockerComposeFile.replace("/dist","");
+        }
         // Construye el comando para ejecutar docker-compose
         ProcessBuilder homingGrbl_process = new ProcessBuilder(
                 "docker-compose","exec","-T", "cnc-motor-control","python","/app/commands_stream.py", serial_route, "-hm", "cnc-motor-control");
@@ -206,11 +216,13 @@ public class MovimientoMotor {
         
     public static String [] getGrblStatus (){
         
-        String dockerComposeFile = System.getProperty("user.dir").replace("/InterfazMCNC","");
-
+        String dockerComposeFile = System.getProperty("user.dir").replace("/InterfazMCNC","/python_scripts");
+        System.out.println(dockerComposeFile);
         // Construye el comando para ejecutar docker-compose
         //ProcessBuilder processBuilderPrune = new ProcessBuilder("docker", "container", "prune", "-f");
-
+        if (dockerComposeFile.contains("dist")){
+            dockerComposeFile = dockerComposeFile.replace("/dist","");
+        }
         ProcessBuilder getStatusGrbl_process = new ProcessBuilder(
                 "docker-compose", "exec","-T", "cnc-motor-control","python","/app/commands_stream.py",serial_route,"-s");
         
@@ -267,8 +279,10 @@ public class MovimientoMotor {
     
     public static void grblHold (){
         
-        String dockerComposeFile = System.getProperty("user.dir").replace("/InterfazMCNC","");
-
+        String dockerComposeFile = System.getProperty("user.dir").replace("/InterfazMCNC","/python_scripts");
+        if (dockerComposeFile.contains("dist")){
+            dockerComposeFile = dockerComposeFile.replace("/dist","");
+        }
         // Construye el comando para ejecutar docker-compose
         //ProcessBuilder processBuilderPrune = new ProcessBuilder("docker", "container", "prune", "-f");
 
@@ -295,8 +309,10 @@ public class MovimientoMotor {
     
     public static void grblResume (){
         
-        String dockerComposeFile = System.getProperty("user.dir").replace("/InterfazMCNC","");
-
+        String dockerComposeFile = System.getProperty("user.dir").replace("/InterfazMCNC","/python_scripts");
+        if (dockerComposeFile.contains("dist")){
+            dockerComposeFile = dockerComposeFile.replace("/dist","");
+        }
         // Construye el comando para ejecutar docker-compose
         //ProcessBuilder processBuilderPrune = new ProcessBuilder("docker", "container", "prune", "-f");
 
@@ -323,8 +339,10 @@ public class MovimientoMotor {
     
     public static void main(String[] args) {
         serial_route=findPort();
-        gcode_route=System.getProperty("user.dir").replace("/InterfazMCNC","");
-        
+        gcode_route=System.getProperty("user.dir").replace("/InterfazMCNC","/python_scripts");
+        if (gcode_route.contains("dist")){
+            gcode_route = gcode_route.replace("/dist","");
+        }
         String datos[] = getGrblStatus();
         
         System.out.print(datos[0]+datos[1]+datos[2]);

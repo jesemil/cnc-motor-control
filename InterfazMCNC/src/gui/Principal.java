@@ -454,7 +454,11 @@ public class Principal extends javax.swing.JFrame {
          // Convierte las rutas en objetos Path
         System.out.print(rutaOrigen);
         Path origenPath = Paths.get(rutaOrigen);
-        Path destinoPath = Paths.get(System.getProperty("user.dir").replace("/InterfazMCNC","")+"/" +archivo.getName());
+        String archivoDestino = System.getProperty("user.dir").replace("/InterfazMCNC","/python_scripts")+"/" +archivo.getName();
+        if (archivoDestino.contains("dist")){
+            archivoDestino = archivoDestino.replace("/dist","");
+        }
+        Path destinoPath = Paths.get(archivoDestino);
         // Copia el archivo de origen al destino
         Files.copy(origenPath, destinoPath );
         return destinoPath;
