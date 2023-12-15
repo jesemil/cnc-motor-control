@@ -91,7 +91,7 @@ public class MovimientoMotor {
     public static String findPort(){
         String prefix = "/dev/";
         ProcessBuilder processBuilder = new ProcessBuilder("ls", prefix);
-        processBuilder.redirectErrorStream(true);
+//        processBuilder.redirectErrorStream(true);
 
         try {
             Process process = processBuilder.start();
@@ -207,10 +207,24 @@ public class MovimientoMotor {
         }
         // Construye el comando para ejecutar docker-compose
         ProcessBuilder homingGrbl_process = new ProcessBuilder(
-                "docker-compose","exec","-T", "cnc-motor-control","python","/app/commands_stream.py", serial_route, "-hm", "cnc-motor-control");
+                "docker-compose","exec","-T", "cnc-motor-control","python","/app/commands_stream.py", serial_route, "-hm");
         
         homingGrbl_process.directory(new java.io.File(dockerComposeFile));
         return homingGrbl_process;
+    }
+    
+    public static ProcessBuilder grblReset (){
+        
+        String dockerComposeFile = System.getProperty("user.dir").replace("/InterfazMCNC","/python_scripts");
+        if (dockerComposeFile.contains("dist")){
+            dockerComposeFile = dockerComposeFile.replace("/dist","");
+        }
+        // Construye el comando para ejecutar docker-compose
+        ProcessBuilder resetGrbl_process = new ProcessBuilder(
+                "docker-compose","exec","-T", "cnc-motor-control","python","/app/commands_stream.py", serial_route, "-rs");
+        
+        resetGrbl_process.directory(new java.io.File(dockerComposeFile));
+        return resetGrbl_process;
     }
     
         

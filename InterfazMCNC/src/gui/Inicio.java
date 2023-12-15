@@ -6,6 +6,8 @@ package gui;
 import cnc_hotwire.MovimientoMotor;
 import java.io.IOException;
 import javax.swing.JOptionPane;
+import cnc_hotwire.SerialPort;
+
 
 /**
  *
@@ -13,6 +15,7 @@ import javax.swing.JOptionPane;
  */
 public class Inicio extends javax.swing.JFrame {
     MovimientoMotor motoresGrbl;
+    SerialPort serial;
     /**
      * Creates new form Inicio
      */
@@ -27,6 +30,7 @@ public class Inicio extends javax.swing.JFrame {
                                               "ERROR", JOptionPane.ERROR_MESSAGE);
             System.exit(0);
         }
+        this.serial = new SerialPort(port, 115200);
     }
 
     /**
