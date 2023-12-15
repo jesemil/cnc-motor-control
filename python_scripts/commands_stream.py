@@ -50,8 +50,10 @@ parser.add_argument('-s','--status',action='store_true', default=False,
         help='machine status plus location')
 parser.add_argument('-hm','--homing',action='store_true', default=False, 
         help='init homing cycle')   
-parser.add_argument('-x','--unlock',action='store_true', default=False, 
-        help='Unlockig grbl')
+parser.add_argument('-x','--hold',action='store_true', default=False, 
+        help='holding grbl')
+parser.add_argument('-rs','--reset',action='store_true', default=False, 
+        help='Reset grbl')
 parser.add_argument('-r','--resume',action='store_true', default=False, 
         help='resume grbl')     
 parser.add_argument('-u','--update',action='store_true', default=False,
@@ -87,8 +89,13 @@ def send_grbl(command) :
         print(e)
         sys.stdout.flush()
 
-if args.unlock :
+if args.hold :
     s.write(('!').encode('utf-8')) # Send g-code block to grbl
+if args.hold :
+    ctrl_x = chr(24)
+    s.write((ctrl_x).encode('utf-8')) # Send g-code block to grbl
+    time.sleep(2)
+    s.flushInput()
 if args.resume :
     s.write(('~').encode('utf-8')) # Send g-code block to grbl
 if args.status : 
