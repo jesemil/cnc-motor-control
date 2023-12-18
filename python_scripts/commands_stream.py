@@ -60,6 +60,8 @@ parser.add_argument('-u','--update',action='store_true', default=False,
         help='update settings')
 parser.add_argument('-m','--move',action='store_true', default=False,
         help='move commands')
+parser.add_argument('-c','--close',action='store_true', default=False,
+        help='close serial connection')
 parser.add_argument('-mm','--move_mask',type=int, choices=range(8), help='move direction')
 parser.add_argument('--speed', type=int, help='speed argument for update mode')
 parser.add_argument('--block_x', type=int, help='block x argument for update mode')
@@ -68,10 +70,16 @@ parser.add_argument('--block_y', type=int, help='block y argument for update mod
 parser.add_argument('--homing_mode', type=int, choices=range(16), help='homing mode argument for update mode (4-bit mask)')
 args = parser.parse_args()
 
-s = serial.Serial(args.serial_port,BAUD_RATE)
+s = serial.Serial()  # Ajusta el nombre del puerto según tu configuración
+s.port = '/dev/ttyACM0'
+s.baudrate = 115200
+if not s.is_open :
+    s.open()
+
+#s = serial.Serial(args.serial_port,BAUD_RATE)
 #s.write(("\r\n\r\n").encode('utf-8'))
-time.sleep(2)   # Wait for grbl to initialize 
-s.flushInput()  # Flush startup text in serial input
+#time.sleep(2)   # Wait for grbl to initialize 
+#s.flushInput()  # Flush startup text in serial input
 #s.write(("$X\n").encode('utf-8'))
 #time.sleep(2)   # Wait for grbl to initialize 
 #s.flushInput()
@@ -80,8 +88,6 @@ def send_grbl(command) :
         print('Sending: ' + command)
         sys.stdout.flush()
         s.write((command).encode('utf-8')) # Send g-code block to grbl
-        #grbl_out=''
-        #while grbl_out != None:
         grbl_out = s.readline().decode('utf-8') # Wait for grbl response with carriage return
         print(grbl_out.strip())
         sys.stdout.flush()
@@ -91,11 +97,12 @@ def send_grbl(command) :
 
 if args.hold :
     s.write(('!').encode('utf-8')) # Send g-code block to grbl
-if args.hold :
+if args.reset :
     ctrl_x = chr(24)
-    s.write((ctrl_x).encode('utf-8')) # Send g-code block to grbl
+    send_grbl(ctrl_x) # Send g-code block to grbl
     time.sleep(2)
     s.flushInput()
+    send_grbl('?') # Send g-code block to grbl
 if args.resume :
     s.write(('~').encode('utf-8')) # Send g-code block to grbl
 if args.status : 
@@ -105,46 +112,31 @@ if args.status :
 if args.homing : 
     send_grbl('$H\n')
 if args.update :
-    send_grbl('$100='+str(args.speed)+'\n')
-    send_grbl('$101='+str(args.speed)+'\n')
+    send_grbl('$110='+str(args.speed)+'\n')
+    send_grbl('$111='+str(args.speed)+'\n')
     send_grbl('$25='+str(args.homing_mode)+'\n')
     send_grbl('$130='+str(args.block_x)+'\n')
     send_grbl('$131='+str(args.block_y)+'\n')
 if args.move :
     if args.move_mask == 0 : #up
-        send_grbl('$X\n')
-        s.flushInput()
         send_grbl('G91G0X0Y10.\n')
-        s.flushInput()
-        send_grbl('?')
     if args.move_mask == 1 : #down
-        send_grbl('$X\n')
-        s.flushInput()
         send_grbl('G91G0Y-10.\n')
     if args.move_mask == 2 : #right
-        send_grbl('$X\n')
-        s.flushInput()
         send_grbl('G91G0X10.\n')
     if args.move_mask == 3 : #left
-        send_grbl('$X\n')
-        s.flushInput()
         send_grbl('G91G0X-10.\n')
     if args.move_mask == 4 : #up-right
-        send_grbl('$X\n')
-        s.flushInput()
         send_grbl('G91G0X7.Y7.\n')
     if args.move_mask == 5 : #up-left
-        send_grbl('$X\n')
-        s.flushInput()
         send_grbl('G91G0X-7.Y7\n')
     if args.move_mask == 6 : #down-right
-        send_grbl('$X\n')
-        s.flushInput()
         send_grbl('G91G0X7.Y-7.\n')
     if args.move_mask == 7 : #down-left
-        send_grbl('$X\n')
-        s.flushInput()
         send_grbl('G91G0X-7.Y-7.\n')
+if args.close :
+    s.close()
+    s.__del__()
 #if args.check : 
 #    check_mode = True
 # Open g-code file
@@ -173,4 +165,4 @@ for line in f:
 
 # Close file and serial port
 #f.close()
-s.close()    
+#s.close()    

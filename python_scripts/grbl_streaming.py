@@ -87,7 +87,12 @@ def periodic_timer() :
   
 
 # Initialize
-s = serial.Serial(args.device_file,BAUD_RATE)
+#s = serial.Serial(args.device_file,BAUD_RATE)
+s = serial.Serial()
+s.port = args.device_file
+s.baudrate = BAUD_RATE
+if not s.is_open :
+    s.open()
 f = args.gcode_file
 verbose = True
 if args.quiet : verbose = False
@@ -105,12 +110,12 @@ sys.stdout.flush()
 
 
 # Wait for grbl to initialize and flush startup text in serial input
-time.sleep(2)
-s.flushInput()
+#time.sleep(2)
+#s.flushInput()
 
-s.write(("$X" + "\n").encode('utf-8'))
-time.sleep(2)   # Wait for grbl to initialize 
-s.flushInput()  # Flush startup text in serial input
+#s.write(("$X" + "\n").encode('utf-8'))
+#time.sleep(2)   # Wait for grbl to initialize 
+#s.flushInput()  # Flush startup text in serial input
 
 
 if check_mode :
@@ -240,4 +245,4 @@ else :
 
 # Close file and serial port
 f.close()
-s.close()
+#s.close()
