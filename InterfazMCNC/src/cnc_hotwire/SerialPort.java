@@ -4,6 +4,8 @@
  */
 package cnc_hotwire;
 
+import java.io.IOException;
+
 /**
  *
  * @author jesemil
@@ -17,7 +19,7 @@ public class SerialPort {
         this.baudeRate = baudeRate;
     }
     
-    public static ProcessBuilder openSerialCommunication(){
+    public void openSerialCommunication(){
         
         String dockerComposeFile = System.getProperty("user.dir").replace("/InterfazMCNC","/python_scripts");
         if (dockerComposeFile.contains("dist")){
@@ -29,7 +31,40 @@ public class SerialPort {
         serial_handler_process.redirectErrorStream(true);
         //serial_handler_process.redirectOutput();
         
-        serial_handler_process.directory(new java.io.File(dockerComposeFile));      
-        return serial_handler_process;        
+        serial_handler_process.directory(new java.io.File(dockerComposeFile));
+        serial_handler_process.redirectErrorStream(true);
+        Thread processThread = new Thread(() -> {
+            try{
+            
+                Process serial_handler = serial_handler_process.start();
+                int exitCode = serial_handler.waitFor();
+            }catch (IOException | InterruptedException e) {
+                e.printStackTrace();
+            }
+        });
+        processThread.start();
+            
+    }
+    
+    public void closeSerialCommunication(){
+        
+        String dockerComposeFile = System.getProperty("user.dir").replace("/InterfazMCNC","/python_scripts");
+        if (dockerComposeFile.contains("dist")){
+            dockerComposeFile = dockerComposeFile.replace("/dist","");
+        }
+        // Construye el comando para ejecutar docker-compose
+        ProcessBuilder close_process = new ProcessBuilder("docker-compose","stop");
+        close_process.redirectErrorStream(true);
+        //serial_handler_process.redirectOutput();
+        
+        close_process.directory(new java.io.File(dockerComposeFile));
+        close_process.redirectErrorStream(true);
+            try{
+            
+                Process close = close_process.start();
+                int exitCode = close.waitFor();
+            }catch (IOException | InterruptedException e) {
+                e.printStackTrace();
+            }       
     }
 }
