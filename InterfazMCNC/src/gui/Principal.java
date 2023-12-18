@@ -25,25 +25,39 @@ import javax.swing.SwingUtilities;
 import java.nio.file.Paths;
 import java.nio.file.Path;
 import java.nio.file.Files;
-
+import cnc_hotwire.SerialPort;
 /**
  *
  * @author Irving de Jesus
  */
 public class Principal extends javax.swing.JFrame {
+    
     JFileChooser seleccionar=new JFileChooser();
     File archivo;
     MovimientoMotor motoresGrbl;
+    SerialPort serial;
     private Path archivoPath;
-    
+    private static volatile boolean pauseFlag = false;
     private static volatile boolean stopFlag = false;
+
     /**
      * Creates new form Principal
      */
      
-    public Principal(MovimientoMotor motoresGrbl) {
+    public Principal(MovimientoMotor motoresGrbl, SerialPort serial) {
         initComponents();
         this.motoresGrbl=motoresGrbl;
+        this.serial = serial;
+        
+        serial.openSerialCommunication();
+        
+        try {
+            // Sleep for 5 seconds (5000 milliseconds)
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        
         String [] status = this.motoresGrbl.getGrblStatus();
         jTextField2.setText(status[0]);
         jTextField1.setText(status[1]);
@@ -62,6 +76,10 @@ public class Principal extends javax.swing.JFrame {
         grupo1 = new javax.swing.ButtonGroup();
         buttonGroup1 = new javax.swing.ButtonGroup();
         bg = new javax.swing.JPanel();
+        jPanel1 = new javax.swing.JPanel();
+        jToggleButton2 = new javax.swing.JToggleButton();
+        jToggleButton3 = new javax.swing.JToggleButton();
+        jToggleButton13 = new javax.swing.JToggleButton();
         jPanel2 = new javax.swing.JPanel();
         jLabel24 = new javax.swing.JLabel();
         jSeparator2 = new javax.swing.JSeparator();
@@ -82,20 +100,76 @@ public class Principal extends javax.swing.JFrame {
         jTextField1 = new javax.swing.JTextField();
         jTextField2 = new javax.swing.JTextField();
         jTextField3 = new javax.swing.JTextField();
-        jPanel1 = new javax.swing.JPanel();
-        jToggleButton2 = new javax.swing.JToggleButton();
-        jToggleButton3 = new javax.swing.JToggleButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTextArea1 = new javax.swing.JTextArea();
         btnSelect = new javax.swing.JButton();
-        jbar = new javax.swing.JProgressBar();
         jToggleButton1 = new javax.swing.JToggleButton();
+        jButton1 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         bg.setBackground(new java.awt.Color(255, 255, 255));
         bg.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+
+        jPanel1.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+
+        jToggleButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imgs/bPlay.png"))); // NOI18N
+        jToggleButton2.setToolTipText("");
+        jToggleButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jToggleButton2ActionPerformed(evt);
+            }
+        });
+
+        jToggleButton3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imgs/bPausa.png"))); // NOI18N
+        jToggleButton3.setEnabled(false);
+        jToggleButton3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jToggleButton3ActionPerformed(evt);
+            }
+        });
+
+        jToggleButton13.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imgs/bStop.png"))); // NOI18N
+        jToggleButton13.setEnabled(false);
+        jToggleButton13.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jToggleButton13ActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap(18, Short.MAX_VALUE)
+                .addComponent(jToggleButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(jToggleButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 82, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(jToggleButton13, javax.swing.GroupLayout.PREFERRED_SIZE, 81, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(18, Short.MAX_VALUE))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap(18, Short.MAX_VALUE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jToggleButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(jToggleButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 82, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jToggleButton13, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)))
+                .addContainerGap(18, Short.MAX_VALUE))
+        );
+
+        bg.add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(220, 440, 320, 120));
 
         jPanel2.setBackground(new java.awt.Color(255, 255, 255));
         jPanel2.setForeground(new java.awt.Color(255, 255, 255));
@@ -306,48 +380,6 @@ public class Principal extends javax.swing.JFrame {
 
         bg.add(jPanel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(640, 10, 380, 580));
 
-        jPanel1.setBackground(new java.awt.Color(255, 255, 255));
-        jPanel1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
-
-        jToggleButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imgs/bPlay.png"))); // NOI18N
-        jToggleButton2.setToolTipText("");
-        jToggleButton2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jToggleButton2ActionPerformed(evt);
-            }
-        });
-
-        jToggleButton3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imgs/bStop.png"))); // NOI18N
-        jToggleButton3.setEnabled(false);
-        jToggleButton3.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jToggleButton3ActionPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jToggleButton3)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jToggleButton2)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(14, 14, 14)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jToggleButton2)
-                    .addComponent(jToggleButton3))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        bg.add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(380, 420, -1, 140));
-
         jTextArea1.setColumns(20);
         jTextArea1.setFont(new java.awt.Font("Roboto", 0, 14)); // NOI18N
         jTextArea1.setRows(5);
@@ -363,7 +395,6 @@ public class Principal extends javax.swing.JFrame {
             }
         });
         bg.add(btnSelect, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 70, 200, -1));
-        bg.add(jbar, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 420, 310, 70));
 
         jToggleButton1.setBackground(new java.awt.Color(255, 255, 153));
         jToggleButton1.setFont(new java.awt.Font("NATS", 0, 24)); // NOI18N
@@ -376,6 +407,17 @@ public class Principal extends javax.swing.JFrame {
             }
         });
         bg.add(jToggleButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 530, 120, -1));
+
+        jButton1.setBackground(new java.awt.Color(0, 204, 204));
+        jButton1.setText("RESET");
+        jButton1.setToolTipText("");
+        jButton1.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+        bg.add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 420, 120, 40));
 
         getContentPane().add(bg, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 1024, 600));
 
@@ -396,36 +438,7 @@ public class Principal extends javax.swing.JFrame {
 
         return documento.toString();
     }   
-    
-    class Avanzando implements Runnable {
-    JProgressBar bar;
-    int tiempoT = 1; // Tiempo del proceso en segundos
-    int intervalo = tiempoT * 10;
-    
-    
-    public Avanzando(JProgressBar bar) {
-        this.bar = bar;
-    }
-    
-    public void run() {
-        System.out.println(intervalo);
-        for (int i = 1; i <= 100; i++) {
-            try {
-                Thread.sleep(intervalo);
-            } catch (InterruptedException ex) {
-                Logger.getLogger(Avanzando.class.getName()).log(Level.SEVERE, null, ex);
-            }
-
-            bar.setValue(i);
-
-            if (bar.getValue() == 100) {
-                JOptionPane.showMessageDialog(null, "Ha terminado");
-            }
-        }
-    }
-    }
-    
-    
+        
     private void btnSelectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSelectActionPerformed
         // TODO add your handling code here:
         seleccionar.setCurrentDirectory(new File("I:\\Documentos\\NetBeansProjects\\Prueba\\src\\codigos"));
@@ -468,114 +481,122 @@ public class Principal extends javax.swing.JFrame {
         // TODO add your handling code here:
         jToggleButton3.setEnabled(true);
         jToggleButton2.setEnabled(false);
+        jToggleButton13.setEnabled(true);
         Enumeration<AbstractButton> buttons = grupo1.getElements();
         while (buttons.hasMoreElements()) {
             AbstractButton button = buttons.nextElement();
             button.setEnabled(false);
         }
         String currentText = jTextArea1.getText();
-        if(!stopFlag){
-        if (archivo != null){
-            try {
-                archivoPath = copiarArchivo(archivo.getPath());
-                System.out.println("Archivo copiado con éxito.");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            
-            motoresGrbl.setGcode_route(archivo.getName());
-            ProcessBuilder grblStreaming = motoresGrbl.grblStreaming();
-            
-            //grblStreaming.redirectErrorStream(true);
-            //grblStreaming.inheritIO();
-            Thread processThread = new Thread(() -> {
-                Process python_streaming = null;
-                try{    
-                    jTextArea1.setText(currentText+"Iniciando corte"+"\n");
-                    python_streaming = grblStreaming.start();
-                    InputStream dockerInputStream = python_streaming.getInputStream();
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(dockerInputStream),1);
+        if(!pauseFlag){
+            if (archivo != null){
+                try {
+                    archivoPath = copiarArchivo(archivo.getPath());
+                    System.out.println("Archivo copiado con éxito.");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
 
-                    String lines = null;
-                    
-                    while((lines=reader.readLine())!=null){
-                        final String finalLines = lines; // Variable final para ser utilizada en la expresión lambda
+                motoresGrbl.setGcode_route(archivo.getName());
+                ProcessBuilder grblStreaming = motoresGrbl.grblStreaming();
+
+                //grblStreaming.redirectErrorStream(true);
+                //grblStreaming.inheritIO();
+                Thread processThread = new Thread(() -> {
+                    Process python_streaming = null;
+                    try{    
+                        jTextArea1.setText(currentText+"Iniciando corte"+"\n");
+                        python_streaming = grblStreaming.start();
+                        InputStream dockerInputStream = python_streaming.getInputStream();
+                        BufferedReader reader = new BufferedReader(new InputStreamReader(dockerInputStream),1);
+
+                        String lines = null;
+                        boolean alarm;
+                        while((lines=reader.readLine())!=null){
+                            final String finalLines = lines; // Variable final para ser utilizada en la expresión lambda
+                            SwingUtilities.invokeLater(() -> {
+                                System.out.println(finalLines);
+                                if(finalLines.contains("MSG:")){
+                                    Pattern pattern = Pattern.compile("MSG: \"<([^|]+)\\|MPos:(-?\\d+\\.\\d+),(-?\\d+\\.\\d+),");
+                                    Matcher matcher = pattern.matcher(finalLines);
+                                    if (matcher.find()) {
+                                        // Obtener los dos primeros números MPos
+                                        String status = matcher.group(1);
+                                        String mpos1 = matcher.group(2);
+                                        String mpos2 = matcher.group(3);
+
+                                        // Imprimir los resultados
+                                        jTextField2.setText(status);
+                                        jTextField1.setText(mpos1);
+                                        jTextField3.setText(mpos2);
+
+                                    } 
+                                }
+                                if(finalLines.contains("Time")){
+                                    jTextArea1.setText(jTextArea1.getText()+"Corte terminado"+"\n");
+                                    jTextArea1.setText(jTextArea1.getText()+finalLines+"\n");
+                                }
+                                if(finalLines.contains("ALARM:1")){
+                                    jTextArea1.setText(currentText+"ERROR: revise finales de carrera y reinice"+"\n");
+                                }
+                                if(finalLines.contains("Grbl 1.1h")){
+                                    jTextArea1.setText(currentText+"Se presiono el paro de emergencia, desoprimalo"+"\n");
+                                    stopFlag=true;
+                                }
+                            });
+
+                        }
+
+                        // Cerrar el BufferedReader
+                        reader.close();
+                        // Espera a que el proceso termine
+                        System.out.println("Esperando python streaming termine");
+                        int exitCode = python_streaming.waitFor();
+                        System.out.println("python streaming termino");
+                    } catch (IOException | InterruptedException e) {
+                            e.printStackTrace();
+                    } finally{                        
                         SwingUtilities.invokeLater(() -> {
-                            System.out.println(finalLines);
-                            if(finalLines.contains("MSG:")){
-                                Pattern pattern = Pattern.compile("MSG: \"<([^|]+)\\|MPos:(-?\\d+\\.\\d+),(-?\\d+\\.\\d+),");
-                                Matcher matcher = pattern.matcher(finalLines);
-                                if (matcher.find()) {
-                                    // Obtener los dos primeros números MPos
-                                    String status = matcher.group(1);
-                                    String mpos1 = matcher.group(2);
-                                    String mpos2 = matcher.group(3);
-                                    
-                                    // Imprimir los resultados
-                                    jTextField2.setText(status);
-                                    jTextField1.setText(mpos1);
-                                    jTextField3.setText(mpos2);
-                                
-                                } 
+                            jToggleButton3.setEnabled(false);
+                            jToggleButton2.setEnabled(true);
+                            jToggleButton13.setEnabled(false);
+                            Enumeration<AbstractButton> buttonsAfter = grupo1.getElements();
+                            while (buttonsAfter.hasMoreElements()) {
+                                AbstractButton button = buttonsAfter.nextElement();
+                                button.setEnabled(true);
                             }
-                            if(finalLines.contains("Time")){
-                                jTextArea1.setText(currentText+"Corte terminado"+"\n");
-                                jTextArea1.setText(currentText+finalLines+"\n");
+                            if(!stopFlag){
+                                JOptionPane.showMessageDialog(null,"Corte finalizado");
                             }
-                            if(finalLines.contains("ERROR")){
-                                
+                            else{
+                                JOptionPane.showMessageDialog(null,"Proceso detenido haga homing para continuar");
                             }
+                            if (archivoPath != null) {
+                                try {
+                                    Files.delete(archivoPath);
+                                    System.out.println("Archivo borrado después de la operación.");
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                            archivo=null;
+                            pauseFlag=false;
+                            stopFlag=false;
                         });
                     }
-                    
-                    // Cerrar el BufferedReader
-                    reader.close();
-                    // Espera a que el proceso termine
-                    int exitCode = python_streaming.waitFor();                    
-                } catch (IOException | InterruptedException e) {
-                        e.printStackTrace();
-                } finally{
-                    try {
-                        int exitCode = python_streaming.exitValue();
-                    } catch (IllegalThreadStateException ex) {
-                        ex.printStackTrace();
-                    }
-                    SwingUtilities.invokeLater(() -> {
-                        jToggleButton3.setEnabled(false);
-                        jToggleButton2.setEnabled(true);
-                        Enumeration<AbstractButton> buttonsAfter = grupo1.getElements();
-                        while (buttonsAfter.hasMoreElements()) {
-                            AbstractButton button = buttonsAfter.nextElement();
-                            button.setEnabled(true);
-                        }
-                        if(!stopFlag){
-                            JOptionPane.showMessageDialog(null,"Corte Finalizado");
-                        }
-                        if (archivoPath != null) {
-                            try {
-                                Files.delete(archivoPath);
-                                System.out.println("Archivo borrado después de la operación.");
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                        archivo=null;
-                        stopFlag=false;
-                    });
+                });
+                processThread.start();
                 }
-            });
-            processThread.start();
-            }
-        else{
-            jToggleButton3.setEnabled(false);
+            else{
+                jToggleButton3.setEnabled(false);
                 jToggleButton2.setEnabled(true);
                 buttons = grupo1.getElements();
-                while (buttons.hasMoreElements()) {
-                    AbstractButton button = buttons.nextElement();
-                    button.setEnabled(true);
-                }
-            JOptionPane.showMessageDialog(null,"Seleccione un archivo correcto");
-        }
+                    while (buttons.hasMoreElements()) {
+                        AbstractButton button = buttons.nextElement();
+                        button.setEnabled(true);
+                    }
+                JOptionPane.showMessageDialog(null,"Seleccione un archivo correcto");
+            }
         }else{
             jTextArea1.setText(currentText+"Resumiendo Proceso\n");
             motoresGrbl.grblResume();
@@ -586,9 +607,9 @@ public class Principal extends javax.swing.JFrame {
         // TODO add your handling code here:
         jToggleButton2.setEnabled(true);
         jToggleButton3.setEnabled(false);
-        stopFlag = true;
+        pauseFlag = true;
         String currentText = jTextArea1.getText();
-        jTextArea1.setText(currentText+"Proceso detenido presione play para resumir\n");
+        jTextArea1.setText(currentText+"Proceso pausado presione play para resumir\n");
         motoresGrbl.grblHold();
         // Display an "OK" dialog
         JOptionPane.showMessageDialog(null, "Corte detenido presione play para resumir.", "Information", JOptionPane.WARNING_MESSAGE);
@@ -650,12 +671,12 @@ public class Principal extends javax.swing.JFrame {
     private void jToggleButton11ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jToggleButton11ActionPerformed
         // TODO add your handling code here:
         
-        ProcessBuilder movUpLeft = motoresGrbl.grblHoming();
+        ProcessBuilder hommingProcess = motoresGrbl.grblHoming();
         Thread processThread = new Thread(() -> {
         try{    
             String currentText = jTextArea1.getText();
             jTextArea1.setText(currentText+"Staring Homing"+"\n");
-            Process python_streaming = movUpLeft.start();
+            Process python_streaming = hommingProcess.start();
             // Espera a que el proceso termine
             int exitCode = python_streaming.waitFor();
             jTextArea1.setText(currentText+"Homing finished"+"\n");
@@ -673,21 +694,35 @@ public class Principal extends javax.swing.JFrame {
         jTextArea1.setText(currentText+"moved right"+"\n");
     }//GEN-LAST:event_jToggleButton10ActionPerformed
 
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // TODO add your handling code here:
+        motoresGrbl.grblReset();
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+        // TODO add your handling code here:
+        serial.closeSerialCommunication();
+    }//GEN-LAST:event_formWindowClosing
+
+    private void jToggleButton13ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jToggleButton13ActionPerformed
+        // TODO add your handling code here:
+        stopFlag=true;
+        motoresGrbl.grblReset();
+    }//GEN-LAST:event_jToggleButton13ActionPerformed
+    
+    
     /**
      * @param args the command line arguments
      */
 
 
     
-    //Variables propias
-    private boolean ePlay = true;
-    private boolean eStop = false;
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel bg;
     private javax.swing.JButton btnSelect;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.ButtonGroup grupo1;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel24;
     private javax.swing.JLabel jLabel25;
     private javax.swing.JLabel jLabel26;
@@ -706,6 +741,7 @@ public class Principal extends javax.swing.JFrame {
     private javax.swing.JToggleButton jToggleButton10;
     private javax.swing.JToggleButton jToggleButton11;
     private javax.swing.JToggleButton jToggleButton12;
+    private javax.swing.JToggleButton jToggleButton13;
     private javax.swing.JToggleButton jToggleButton2;
     private javax.swing.JToggleButton jToggleButton3;
     private javax.swing.JToggleButton jToggleButton4;
@@ -714,6 +750,5 @@ public class Principal extends javax.swing.JFrame {
     private javax.swing.JToggleButton jToggleButton7;
     private javax.swing.JToggleButton jToggleButton8;
     private javax.swing.JToggleButton jToggleButton9;
-    private javax.swing.JProgressBar jbar;
     // End of variables declaration//GEN-END:variables
 }

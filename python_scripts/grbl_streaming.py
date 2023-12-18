@@ -87,7 +87,12 @@ def periodic_timer() :
   
 
 # Initialize
-s = serial.Serial(args.device_file,BAUD_RATE)
+#s = serial.Serial(args.device_file,BAUD_RATE)
+s = serial.Serial()
+s.port = args.device_file
+s.baudrate = BAUD_RATE
+if not s.is_open :
+    s.open()
 f = args.gcode_file
 verbose = True
 if args.quiet : verbose = False
@@ -105,12 +110,12 @@ sys.stdout.flush()
 
 
 # Wait for grbl to initialize and flush startup text in serial input
-time.sleep(2)
-s.flushInput()
+#time.sleep(2)
+#s.flushInput()
 
-s.write(("$X" + "\n").encode('utf-8'))
-time.sleep(2)   # Wait for grbl to initialize 
-s.flushInput()  # Flush startup text in serial input
+#s.write(("$X" + "\n").encode('utf-8'))
+#time.sleep(2)   # Wait for grbl to initialize 
+#s.flushInput()  # Flush startup text in serial input
 
 
 if check_mode :
@@ -176,6 +181,7 @@ else:
     # responses, such that we never overflow Grbl's serial read buffer. 
     g_count = 0
     c_line = []
+    alarm_flag=False
     for line in f:
         l_count += 1 # Iterate line counter
         l_block = re.sub('\s|\(.*?\)','',line).upper() # Strip comments/spaces/new line and capitalize
@@ -184,6 +190,12 @@ else:
         grbl_out = '' 
         while sum(c_line) >= RX_BUFFER_SIZE-1 | s.inWaiting() :
             out_temp = s.readline().decode('utf-8').strip() # Wait for grbl response
+            print(out_temp)
+            sys.stdout.flush()
+            if ('ALARM:1') in out_temp or ('Grbl 1.1h' in out_temp):
+                print ("Entre aca") # Debug response
+                sys.stdout.flush()
+                alarm_flag=True
             if out_temp.find('ok') < 0 and out_temp.find('error') < 0 :
                 print ("    MSG: \""+out_temp+"\"") # Debug response
                 sys.stdout.flush()
@@ -193,6 +205,10 @@ else:
                 if verbose: print ("  REC<"+str(g_count)+": \""+out_temp+"\"")
                 sys.stdout.flush()
                 del c_line[0] # Delete the block character count corresponding to the last 'ok'
+            if alarm_flag :
+                break
+        if alarm_flag :
+                break
         unicode_string_stream = l_block + '\n'
         byte_string_stream = unicode_string_stream.encode('utf-8')
         s.write(byte_string_stream) # Send g-code block to grbl
@@ -200,8 +216,8 @@ else:
         sys.stdout.flush()
     # Wait until all responses have been received.
     while l_count > g_count :
+        if alarm_flag : break
         out_temp = s.readline().decode('utf-8').strip() # Wait for grbl response
-        print("estoy en while")
         if out_temp.find('ok') < 0 and out_temp.find('error') < 0 :
             print ("    MSG: \""+out_temp+"\"") # Debug response
             sys.stdout.flush()
@@ -229,4 +245,4 @@ else :
 
 # Close file and serial port
 f.close()
-s.close()
+#s.close()

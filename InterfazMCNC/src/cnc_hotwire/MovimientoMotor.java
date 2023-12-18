@@ -11,7 +11,8 @@ import java.io.InputStreamReader;
 import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
+import java.io.OutputStream;
+import javax.swing.SwingUtilities;
 /**
  *
  * @author jesemil
@@ -91,7 +92,7 @@ public class MovimientoMotor {
     public static String findPort(){
         String prefix = "/dev/";
         ProcessBuilder processBuilder = new ProcessBuilder("ls", prefix);
-        processBuilder.redirectErrorStream(true);
+//        processBuilder.redirectErrorStream(true);
 
         try {
             Process process = processBuilder.start();
@@ -207,10 +208,50 @@ public class MovimientoMotor {
         }
         // Construye el comando para ejecutar docker-compose
         ProcessBuilder homingGrbl_process = new ProcessBuilder(
-                "docker-compose","exec","-T", "cnc-motor-control","python","/app/commands_stream.py", serial_route, "-hm", "cnc-motor-control");
+                "docker-compose","exec","-T", "cnc-motor-control","python","/app/commands_stream.py", serial_route, "-hm");
         
         homingGrbl_process.directory(new java.io.File(dockerComposeFile));
         return homingGrbl_process;
+    }
+    
+    public void grblReset (){
+        
+        String dockerComposeFile = System.getProperty("user.dir").replace("/InterfazMCNC","/python_scripts");
+        if (dockerComposeFile.contains("dist")){
+            dockerComposeFile = dockerComposeFile.replace("/dist","");
+        }
+        // Construye el comando para ejecutar docker-compose
+        ProcessBuilder resetGrbl_process = new ProcessBuilder(
+                "docker-compose","exec","-T", "cnc-motor-control","python","/app/commands_stream.py", serial_route, "-rs");
+        
+        resetGrbl_process.directory(new java.io.File(dockerComposeFile));
+        resetGrbl_process.redirectErrorStream(true);
+        Thread processThread = new Thread(() -> {
+        try {
+            //Process process_prune = processBuilderPrune.start();
+            //int pruneExitCode = process_prune.waitFor(); // Espera a que el proceso de prune termine
+            Process grblReset = resetGrbl_process.start();
+            InputStream dockerInputStream = grblReset.getInputStream();
+                        BufferedReader reader = new BufferedReader(new InputStreamReader(dockerInputStream),1);
+
+                        String lines = null;
+                        boolean alarm;
+                        while((lines=reader.readLine())!=null){
+                            final String finalLines = lines; // Variable final para ser utilizada en la expresión lambda
+                            SwingUtilities.invokeLater(() -> {
+                                System.out.println(finalLines);
+                            });
+                        }
+            
+            int exitCode = grblReset.waitFor();
+            System.out.print("termino el reinicio");
+            
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+        });
+        // Inicia el hilo de lectura
+        processThread.start();
     }
     
         
