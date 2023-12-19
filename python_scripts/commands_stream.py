@@ -71,7 +71,7 @@ parser.add_argument('--homing_mode', type=int, choices=range(16), help='homing m
 args = parser.parse_args()
 
 s = serial.Serial()  # Ajusta el nombre del puerto según tu configuración
-s.port = '/dev/ttyACM0'
+s.port = args.serial_port
 s.baudrate = 115200
 if not s.is_open :
     s.open()
