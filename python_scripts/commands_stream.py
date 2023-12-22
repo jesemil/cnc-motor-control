@@ -119,21 +119,21 @@ if args.update :
     send_grbl('$131='+str(args.block_y)+'\n')
 if args.move :
     if args.move_mask == 0 : #up
-        send_grbl('G91G0X0Y10.\n')
+        send_grbl('G90G0X0Y10.\n')
     if args.move_mask == 1 : #down
-        send_grbl('G91G0Y-10.\n')
+        send_grbl('G90G0Y-10.\n')
     if args.move_mask == 2 : #right
-        send_grbl('G91G0X10.\n')
+        send_grbl('G90G0X10.\n')
     if args.move_mask == 3 : #left
-        send_grbl('G91G0X-10.\n')
+        send_grbl('G90G0X-10.\n')
     if args.move_mask == 4 : #up-right
-        send_grbl('G91G0X7.Y7.\n')
+        send_grbl('G90G0X7.Y7.\n')
     if args.move_mask == 5 : #up-left
-        send_grbl('G91G0X-7.Y7\n')
+        send_grbl('G90G0X-7.Y7\n')
     if args.move_mask == 6 : #down-right
-        send_grbl('G91G0X7.Y-7.\n')
+        send_grbl('G90G0X7.Y-7.\n')
     if args.move_mask == 7 : #down-left
-        send_grbl('G91G0X-7.Y-7.\n')
+        send_grbl('G90G0X-7.Y-7.\n')
 if args.close :
     s.close()
     s.__del__()
